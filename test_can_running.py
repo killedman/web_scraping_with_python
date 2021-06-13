@@ -10,6 +10,7 @@ from urllib.error import URLError
 # certificate verify failed: certificate has expired (_ssl.c:1056)
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
+import re
 
 
 def download(url, user_agent='wswp', num_retries=2):
@@ -30,9 +31,26 @@ def download(url, user_agent='wswp', num_retries=2):
     return html
 
 
-website = 'https://www.kawabangga.com/posts/4249'
+def crawl_sitemap(url):
+    # download the sitemap file
+    sitemap = download(url)
+    if isinstance(sitemap, bytes):
+        sitemap = sitemap.decode()
+    # extract the sitemap links
+    links = re.findall('<loc>(.*?)</loc>', sitemap)
+    # download each link
+    for link in links:
+        link = 'http://127.0.0.1:8000/places/default/view/' + link.split('/')[-1]
+        html = download(link)
+        # scrape html here
+        print(html)
+
+
+# website = 'https://www.kawabangga.com/posts/4249'
 # website = 'http://httpstat.us/500'
-result = download(website)
-if result:
-    # print(result.decode('utf8'))
-    pass
+# result = download(website)
+# if result:
+#     # print(result.decode('utf8'))
+#     pass
+sitemaps = 'http://127.0.0.1:8000/places/static/sitemap.xml'
+crawl_sitemap(sitemaps)
